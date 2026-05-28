@@ -109,7 +109,7 @@
   background: #ffffff; /* Solid white matching the Hero CTA button */
   border: none;
   border-radius: 40px;
-  color: #000000; /* Black text matching the Hero CTA button */
+  color: #000000 !important; /* Black text — !important overrides inherited white body color on <a> tags */
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -142,7 +142,7 @@
 
 .navCtaBtn:hover {
   background: #f3f3f7;
-  color: #000000;
+  color: #000000 !important;
   transform: translateY(-1px) scale(1.02);
   box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
   padding-right: 1.15rem; /* Balance padding to shift capsule beautifully to the right */
