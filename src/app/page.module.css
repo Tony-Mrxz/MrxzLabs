@@ -1,165 +1,1411 @@
-.page {
-  --gray-rgb: 0, 0, 0;
-  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
-  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-
-  display: grid;
-  grid-template-rows: 20px 1fr 20px;
-  align-items: center;
-  justify-items: center;
-  min-height: 100svh;
-  padding: 80px;
-  gap: 64px;
-  font-family: var(--font-geist-sans);
+.container {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #000000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  z-index: 1;
 }
 
-@media (prefers-color-scheme: dark) {
-  .page {
-    --gray-rgb: 255, 255, 255;
-    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
-    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
+/* --- Grainy WebGL Background Container Fade-In --- */
+.bgContainer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  /* Fades in smoothly from 0.0 to 0.35 opacity over 1.5s, starting right as the logo begins to fly (1.2s) */
+  animation: bgFadeIn 1.5s cubic-bezier(0.25, 1, 0.5, 1) 1.2s forwards;
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
+@keyframes bgFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.35;
   }
 }
 
-.main {
+/* --- Dynamic Brand Logo (Theatrical Preloader -> Navbar Logo) --- */
+.brandLogo {
+  position: fixed;
+  font-family: var(--font-mrxz);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  z-index: 1000;
+  pointer-events: none;
+  
+  /* Initial centered large state */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.8);
+  opacity: 0;
+  
+  /* Coordinated Animation Chain */
+  animation: logoReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards,
+             logoGlow 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards,
+             logoFlyToNavbar 0.6s cubic-bezier(0.76, 0, 0.24, 1) 1.2s forwards;
+
+  /* Premium smooth transition for chameleon color shifts */
+  transition: color 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.brandLogo.chameleonDark {
+  color: #000000 !important;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)) !important;
+}
+
+/* --- Minimalist Premium Navbar Shell --- */
+.navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 64px; /* Sleek, thinner height */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Links on the right, left space reserved for dynamic logo */
+  padding: 0 4rem;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 100;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 3.5rem;
+  list-style: none;
+  
+  /* Synchronized Spawn (Spawns exactly when logo settles at 3.2s) */
+  opacity: 0;
+  animation: navElementsSpawn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards;
+}
+
+.navLinks a {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #a0a0ab;
+  transition: var(--transition-smooth);
+}
+
+.navLinks a:hover {
+  color: #ffffff;
+}
+
+.navCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.52rem 1.45rem;
+  background: #ffffff; /* Solid white matching the Hero CTA button */
+  border: none;
+  border-radius: 40px;
+  color: #000000; /* Black text matching the Hero CTA button */
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btnArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  max-width: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btnArrow svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  display: block;
+}
+
+.navCtaBtn:hover {
+  background: #f3f3f7;
+  color: #000000;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
+  padding-right: 1.15rem; /* Balance padding to shift capsule beautifully to the right */
+}
+
+.navCtaBtn:hover .btnArrow {
+  opacity: 1;
+  max-width: 20px;
+  transform: translateX(0);
+  margin-left: 6px;
+}
+
+/* --- Clean Minimalist Hero Section --- */
+.hero {
+  min-height: calc(100vh - 64px); /* Pushes services section exactly below the fold */
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  grid-row-start: 2;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  
+  /* Synchronized Spawn (Spawns at 3.2s) */
+  opacity: 0;
+  animation: heroReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards;
 }
 
-.main ol {
-  font-family: var(--font-geist-mono);
-  padding-left: 0;
-  margin: 0;
-  font-size: 14px;
-  line-height: 24px;
-  letter-spacing: -0.01em;
-  list-style-position: inside;
+.heroHeadline {
+  font-family: var(--font-headline);
+  font-size: clamp(1.8rem, 5vw, 3.8rem); /* Calibrated to fit perfectly on exactly two lines */
+  font-weight: 800; /* Bold style inherited by 'We handle the' and 'You handle the' */
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: #ffffff; /* Solid full bright white */
+  margin-bottom: 1.8rem;
 }
 
-.main li:not(:last-of-type) {
-  margin-bottom: 8px;
+.headlineLine {
+  display: block;
+  white-space: nowrap; /* Forces each segment to stay strictly on its own line */
 }
 
-.main code {
-  font-family: inherit;
-  background: var(--gray-alpha-100);
-  padding: 2px 4px;
-  border-radius: 4px;
+.italicText {
+  font-style: italic; /* Applies italic style to We, You, build., and vision. */
+}
+
+.heroSubheadline {
+  font-family: var(--font-subtext);
+  font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+  font-weight: 400;
+  color: #858596;
+  line-height: 1.6;
+  max-width: 620px;
+  margin-bottom: 2.8rem;
+}
+
+.heroCta {
+  padding: 0.95rem 2.2rem;
+  background: #ffffff; /* Solid white by default */
+  border: 2px solid transparent; /* 2px hairline border matching uiverse specs */
+  border-radius: 40px;
+  color: #000000; /* Solid pitch-black text by default */
+  font-size: 0.95rem;
   font-weight: 600;
-}
-
-.ctas {
-  display: flex;
-  gap: 16px;
-}
-
-.ctas a {
-  appearance: none;
-  border-radius: 128px;
-  height: 48px;
-  padding: 0 20px;
-  border: none;
-  border: 1px solid transparent;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
   cursor: pointer;
+  outline: none;
+  position: relative;
+  overflow: hidden; /* Restricts the radial pulse to the capsule */
+  backdrop-filter: blur(12px); /* High-fidelity glass blur ready for hover */
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.4s ease; /* EXACT transition from uiverse code! */
+}
+
+.heroCta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: scale(0); /* Shrunk by default */
+  transition: transform 0.5s ease; /* EXACT transition from uiverse code! */
+  pointer-events: none;
+}
+
+.heroCta:hover::after {
+  transform: scale(4); /* EXACT scale factor from uiverse code! */
+}
+
+.heroCta:hover {
+  border-color: rgba(255, 255, 255, 0.3); /* Elegant glass border reveals */
+  background: rgba(255, 255, 255, 0.06); /* Solid white dissolves to glassy 6% */
+  color: #ffffff; /* Text transitions dynamically from black to pure white */
+  transform: translateY(-2px); /* Premium visual lift */
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.08); /* Ambient white hover glow */
+}
+
+/* --- Trusted By Clients Logo Bar --- */
+.trustedBy {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 1rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06); /* Sleek luxury hairline border */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  z-index: 10;
+}
+
+.trustedTitle {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.25em; /* Premium tracked out typography */
+  color: #52525b; /* Sleek dark zinc grey */
+  text-align: center;
+}
+
+.clientGrid {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  line-height: 20px;
-  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 2.8rem;
+  row-gap: 1rem;
 }
 
-a.primary {
-  background: var(--foreground);
-  color: var(--background);
-  gap: 8px;
+.clientItem {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20;
 }
 
-a.secondary {
-  border-color: var(--gray-alpha-200);
-  min-width: 180px;
-}
-
-.footer {
-  grid-row-start: 3;
-  display: flex;
-  gap: 24px;
-}
-
-.footer a {
+.clientLogoWrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%; /* filled in a circle! */
+  background: rgba(255, 255, 255, 0.03); /* Subtle dark glass base */
+  border: 1px solid rgba(255, 255, 255, 0.06); /* Hairline borders */
+  opacity: 0.45; /* Muted default state */
+  overflow: hidden; /* Restricts the logo to the circular mask */
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  user-select: none;
 }
 
-.footer img {
-  flex-shrink: 0;
+.clientLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Fills the circular shape completely */
+  filter: grayscale(1) contrast(1.15); /* Pure mathematical black-and-white default */
+  transition: var(--transition-smooth);
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
+.clientLogoZoomed {
+  transform: scale(1.35); /* Zoom in by 35% to center the core emblem */
+}
 
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.clientItem:hover .clientLogoZoomed {
+  transform: scale(1.42); /* Kinetic scaling swell on hover */
+}
 
-  .footer a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+.clientItem:hover .clientLogoWrapper {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2.5px);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.08); /* Elegant ambient white hover glow */
+}
+
+.clientItem:hover .clientLogo {
+  filter: grayscale(0) contrast(1); /* Restores original vibrant branding colors on hover! */
+}
+
+/* Custom Premium Glassmorphic Tooltip */
+.clientTooltip {
+  position: absolute;
+  bottom: 100%; /* Sits beautifully above the logo icon */
+  left: 50%;
+  transform: translate(-50%, 8px); /* Subtle downward offset for entry */
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(12, 12, 14, 0.85); /* Premium dark backing */
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Hairline borders */
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+}
+
+/* Tooltip Little Wedge Arrow */
+.clientTooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: rgba(12, 12, 14, 0.85) transparent transparent transparent;
+}
+
+.clientItem:hover .clientTooltip {
+  opacity: 1;
+  transform: translate(-50%, -10px); /* Smooth floating reveal upwards */
+}
+
+
+/* --- CSS Keyframe Animations --- */
+
+/* 1. Left-to-Right Fade & Slide Reveal (0.2s - 1.2s) */
+@keyframes logoReveal {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    left: 45%; /* Starts slightly left of center */
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    left: 50%; /* Centers completely */
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.8);
   }
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 32px;
-    padding-bottom: 80px;
+/* 2. Soft Neutral White Glow (1.2s - 2.2s) */
+@keyframes logoGlow {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
   }
-
-  .main {
-    align-items: center;
-  }
-
-  .main ol {
-    text-align: center;
-  }
-
-  .ctas {
-    flex-direction: column;
-  }
-
-  .ctas a {
-    font-size: 14px;
-    height: 40px;
-    padding: 0 16px;
-  }
-
-  a.secondary {
-    min-width: auto;
-  }
-
-  .footer {
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
+  100% {
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5))
+            drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+/* 3. Theatrical Fly-to-Navbar & Glow Damping (2.2s - 3.2s) */
+@keyframes logoFlyToNavbar {
+  0% {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.8);
+    filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5))
+            drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
+  }
+  100% {
+    left: 4rem; /* Precise Navbar Left Padding location */
+    top: 32px;  /* Precise Navbar Middle Height coordinate (64px / 2) */
+    transform: translate(0, -50%) scale(1.0); /* Settle at normal size */
+    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); /* Settle with glow turned off */
   }
 }
+
+/* 4. Navbar Links Slide-Down Spawning (3.2s - 4.2s) */
+@keyframes navElementsSpawn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 5. Hero Section Smooth Slide Reveal (3.2s - 4.4s) */
+@keyframes heroReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1.5rem;
+    height: 56px; /* Sleek mobile height */
+  }
+  .navLinks {
+    display: none;
+  }
+  
+  .hero {
+    min-height: calc(100vh - 56px); /* Align with mobile navbar height */
+  }
+  
+  @keyframes logoFlyToNavbar {
+    0% {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(1.6);
+      filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5));
+    }
+    100% {
+      left: 1.5rem; /* Adapt to mobile padding */
+      top: 28px;   /* Middle of mobile navbar (56px / 2) */
+      transform: translate(0, -50%) scale(1.0);
+      filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    }
+  }
+}
+
+/* --- Services Section (Minimal & Editorial Redesign) --- */
+.servicesSection {
+  width: 100%;
+  background-color: #EFEFED; /* Warm off-white background to soften dark-to-light transition */
+  padding: 10rem 0; /* Extremely generous editorial spacing */
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+  
+  /* Revealed smoothly along with the hero section */
+  opacity: 0;
+  animation: heroReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 2.0s forwards;
+}
+
+.servicesContainer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Left-aligned content for a high-end editorial feel */
+  gap: 6rem; /* High-end spaciousness between headline and grid */
+}
+
+.servicesTitle {
+  font-family: var(--font-headline);
+  font-size: clamp(2.2rem, 5vw, 3.4rem); /* Large elegant heading */
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #0A0A0A; /* Deep dark black */
+  margin: 0;
+}
+
+.servicesHeaderContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.servicesTitleLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(10, 10, 10, 0.08); /* Elegant, extremely subtle thin line */
+  margin-top: 1.5rem;
+}
+
+.servicesEndLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(10, 10, 10, 0.08); /* Elegant, extremely subtle thin line */
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4.5rem; /* Generous spacing between items */
+  width: 100%;
+}
+
+.serviceItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 1.1rem;
+}
+
+.serviceNumber {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #B0B0B0; /* Light grey for the minimal numbers */
+  line-height: 1;
+}
+
+.serviceName {
+  font-family: var(--font-mrxz); /* Lexend Deca */
+  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  color: #111111; /* Sleek dark color */
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.serviceDesc {
+  font-family: var(--font-body);
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  font-weight: 400;
+  color: #444444; /* Clean medium grey */
+  line-height: 1.65;
+  margin: 0;
+  max-width: 320px; /* Editorial column locking for comfortable reading */
+}
+
+/* --- Premium Responsive Editorial Grid (3+2 Symmetry on Desktop) --- */
+@media (min-width: 769px) {
+  .servicesGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 7rem 5rem; /* Generous vertical and horizontal spacing */
+  }
+  
+  .serviceItem {
+    grid-column: span 2; /* Default 3-column span (6 columns total / 2 spans = 3 columns) */
+  }
+  
+  /* Row 2 Asymmetric Centering: */
+  /* Item 4 sits centered under Items 1 and 2 */
+  .serviceItem:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+  
+  /* Item 5 sits centered under Items 2 and 3 */
+  .serviceItem:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+}
+
+/* --- How We Work Process Section (Editorial Dark) --- */
+.processSection {
+  width: 100%;
+  background-color: transparent; /* Transparent so the fixed monochrome WebGL canvas shines through exactly like the hero! */
+  padding: 10rem 0; /* Generous editorial padding */
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+}
+
+.processContainer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6rem;
+}
+
+.processHeaderContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.processTitleLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08); /* Subtle dark timeline hairline below header */
+  margin-top: 1.5rem;
+}
+
+.processTitle {
+  font-family: var(--font-headline);
+  font-size: clamp(2.2rem, 5vw, 3.4rem); /* Large elegant heading */
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #ffffff; /* White text */
+  margin: 0;
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4.5rem;
+  width: 100%;
+}
+
+.processItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 1.1rem;
+  opacity: 0.85;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dimmed state when another item is focused */
+.processItem.dimmed {
+  opacity: 0.3;
+}
+
+/* Active and preceding steps are fully lit */
+.processItem.active,
+.processItem.beforeHovered {
+  opacity: 1;
+}
+
+.timelineContainer {
+  position: relative;
+  width: 100%;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 0;
+  width: 100%; /* Mobile timeline default width */
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.12);
+  z-index: 1;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timelineLineFill {
+  position: absolute;
+  left: 0;
+  width: 0; /* Starts at 0% width when dim */
+  height: 2px; /* Slightly thicker for the glowing trail */
+  background-color: #ffffff;
+  z-index: 2;
+  /* Premium soft white light blur glow effect */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+              0 0 20px rgba(255, 255, 255, 0.4),
+              0 0 35px rgba(255, 255, 255, 0.2);
+  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+}
+
+.timelineLineFill.filled {
+  width: 100%; /* Mobile active width */
+}
+
+.timelineDot {
+  position: absolute;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.35);
+  z-index: 3;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timelineDot.active {
+  background-color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 0 24px rgba(255, 255, 255, 0.4);
+  transform: scale(1.3);
+}
+
+/* Active step title glows */
+.processItem.active .processName {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
+/* Preceding step titles are fully lit white but lack text glow for nice contrast hierarchy */
+.processItem.beforeHovered .processName {
+  color: #ffffff;
+}
+
+.processNumber {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #52525b; /* Muted zinc/grey for the numbers */
+  line-height: 1;
+}
+
+.processName {
+  font-family: var(--font-mrxz); /* Lexend Deca */
+  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  color: #d4d4d8; /* Slightly dim white by default */
+  margin: 0;
+  letter-spacing: -0.02em;
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.processDesc {
+  font-family: var(--font-body);
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  font-weight: 400;
+  color: #a0a0ab; /* Short grey description */
+  line-height: 1.65;
+  margin: 0;
+  max-width: 320px; /* Column lock */
+}
+
+@media (min-width: 769px) {
+  .processGrid {
+    grid-template-columns: repeat(3, 1fr); /* Clean 3-column grid */
+    gap: 7rem 5rem;
+  }
+
+  .timelineLine {
+    width: calc(100% + 5rem); /* Bridge the desktop 5rem horizontal grid gap */
+  }
+
+  .timelineLineFill.filled {
+    width: calc(100% + 5rem); /* Bridge the desktop gap for the fill */
+  }
+
+  .processItem:nth-child(3n) .timelineLine {
+    width: 100%; /* Cap the final element of each row perfectly at column boundary */
+  }
+
+  .processItem:nth-child(3n) .timelineLineFill.filled {
+    width: 100%; /* Cap the fill of the final element at column boundary */
+  }
+}
+
+/* --- Our Work Section (Editorial Light) --- */
+.workSection {
+  width: 100%;
+  background-color: #EFEFED; /* Warm off-white matching Services */
+  padding: 10rem 0; /* Generous editorial padding */
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+}
+
+.workContainer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6rem;
+}
+
+.workHeaderContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.workTitleLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(10, 10, 10, 0.08); /* Elegant subtle divider line directly below header */
+  margin-top: 1.5rem;
+}
+
+.workTitle {
+  font-family: var(--font-headline);
+  font-size: clamp(2.2rem, 5vw, 3.4rem); /* Large elegant heading */
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #0A0A0A; /* Large bold dark text */
+  margin: 0;
+}
+
+.workGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3.5rem;
+  width: 100%;
+}
+
+.workCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #313131; /* Dark background (#313131) for contrast */
+  border-radius: 24px;
+  height: 320px; /* Locked height for clean grid layout */
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0; /* Allow logo to fill container completely */
+}
+
+.workCard:hover {
+  transform: scale(1.025) rotate(-1deg); /* Slight scale up and rotate -1deg */
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+}
+
+.workLogoWrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.45s ease, opacity 0.45s ease;
+  transform: scale(1);
+}
+
+.workCard:hover .workLogoWrapper {
+  transform: scale(1.06); /* Interactive zoom */
+  filter: blur(5px) brightness(0.4); /* Blur & dim on hover to make text overlay perfectly legible */
+}
+
+.workClientLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Fill container completely */
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: none; /* No black & white or grayscale filters! Always in original brand colors */
+}
+
+.workCard:hover .workClientLogo {
+  filter: none;
+}
+
+.workCardMeta {
+  position: absolute;
+  bottom: 3rem; /* Resting position underneath the floated logo */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  opacity: 0; /* Hidden by default */
+  transform: translateY(15px); /* Slide-in entry */
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  width: calc(100% - 4rem);
+  padding: 0 1rem;
+}
+
+.workCard:hover .workCardMeta {
+  opacity: 1; /* Fades in on hover */
+  transform: translateY(0); /* Slides to resting position */
+}
+
+.workCardTitle {
+  font-family: var(--font-mrxz);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff; /* Bright white name */
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.workCardSubtitle {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #a0a0ab; /* Muted grey project type */
+  margin: 0;
+}
+
+.containedLogo {
+  width: 70% !important;
+  height: 70% !important;
+  object-fit: contain !important;
+}
+
+.hyperverseLogo {
+  width: 85% !important;
+  height: 85% !important;
+}
+
+.containedCard {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(10, 10, 10, 0.08) !important;
+}
+
+.containedCard:hover {
+  background: rgba(20, 20, 20, 0.75) !important; /* Elegant dark translucent overlay on hover */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16) !important;
+  border-color: transparent !important;
+}
+
+.containedCard:hover .workCardTitle {
+  color: #ffffff !important; /* Elegant bright white title on dark blur overlay */
+}
+
+.containedCard:hover .workCardSubtitle {
+  color: #a0a0ab !important; /* Elegant muted grey subtitle */
+}
+
+.containedCard:hover .workLogoWrapper {
+  transform: scale(1.06) !important;
+  filter: blur(5px) brightness(0.4) !important; /* Exact same premium dark blur as the other cards */
+  opacity: 1 !important;
+}
+
+@media (min-width: 600px) {
+  .workGrid {
+    grid-template-columns: repeat(2, 1fr); /* 2x2 grid centered on desktop */
+    gap: 4rem;
+  }
+}
+
+/* Settled bypass states to skip mount animations on client-side routing back to portfolio */
+.bgContainer.settled {
+  animation: none !important;
+  opacity: 0.35 !important;
+}
+
+.brandLogo.settled {
+  position: fixed;
+  font-family: var(--font-mrxz);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  z-index: 1000;
+  pointer-events: none;
+  animation: none !important;
+  
+  /* settled desk coordinates */
+  left: 4rem;
+  top: 32px;
+  transform: translate(0, -50%) scale(1.0) !important;
+  filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)) !important;
+  opacity: 1 !important;
+  
+  transition: color 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@media (max-width: 768px) {
+  .brandLogo.settled {
+    left: 1.5rem !important;
+    top: 28px !important;
+    transform: translate(0, -50%) scale(1.0) !important;
+  }
+}
+
+.navLinks.settled {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+.hero.settled {
+  animation: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.servicesSection.settled {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* --- Cinematic CTA Section --- */
+.ctaSection {
+  width: 100%;
+  background-color: transparent; /* Let WebGL show through matching the hero */
+  padding: 10rem 0; /* Generous padding above and below */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Hairline divider at the very top */
+}
+
+.ctaContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  padding: 0 2rem;
+  gap: 1.6rem;
+}
+
+.ctaTitle {
+  font-family: var(--font-headline);
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  font-weight: 800;
+  color: #ffffff; /* Bold white heading */
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.ctaSubtext {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: #858596; /* Subtext in grey */
+  margin: 0;
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+}
+
+.ctaButton {
+  padding: 0.95rem 2.2rem;
+  background: #ffffff; /* Solid white matching the hero button */
+  border: 2px solid transparent;
+  border-radius: 40px;
+  color: #000000; /* Dark text matching the hero button */
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.4s ease;
+}
+
+.ctaButton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: scale(0);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+
+.ctaButton:hover::after {
+  transform: scale(4);
+}
+
+.ctaButton:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06); /* Solid white dissolves to glassy 6% */
+  color: #ffffff; /* Text transitions dynamically to white */
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.08); /* Ambient glow */
+}
+
+/* --- Premium Minimalist Footer --- */
+.footer {
+  width: 100%;
+  background-color: #0a0a0a; /* Dark background matching the hero */
+  padding: 7rem 0 4rem 0; /* Generous spacing */
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Hairline divider at the very top */
+  overflow: hidden; /* Ensure giant watermark doesn't cause overflow */
+}
+
+.footerWatermark {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-headline);
+  font-size: clamp(8rem, 24vw, 24rem); /* Massive responsive size */
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: rgba(255, 255, 255, 0.06); /* low opacity around 5-8% */
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.footerContainer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1; /* Keep content above watermark */
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3.5rem;
+  margin-bottom: 4.5rem;
+}
+
+@media (min-width: 768px) {
+  .footerGrid {
+    grid-template-columns: 2fr 1fr 1fr; /* Asymmetric grid layout to give left column more room */
+    gap: 5rem;
+  }
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.1rem;
+}
+
+.footerBrand {
+  font-family: var(--font-mrxz); /* Lexend Deca */
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff; /* Bold white */
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.footerTagline {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: #858596; /* Tagline in grey */
+  margin: 0;
+  line-height: 1.6;
+}
+
+.footerColTitle {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #52525b; /* Subtle column headings */
+  margin: 0 0 0.2rem 0;
+}
+
+.footerLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.82rem;
+}
+
+.footerLinks a {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #ffffff; /* Quick links in white */
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.footerLinks a:hover {
+  opacity: 0.7; /* Premium hover transition */
+}
+
+.footerContact {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: #858596; /* Contact details in grey */
+  margin: 0;
+  line-height: 1.5;
+}
+
+.footerEmailLink {
+  color: #858596; /* Grey matching the text */
+  text-decoration: none;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.footerEmailLink:hover {
+  color: #ffffff; /* Smooth color hover to white */
+  text-decoration: underline;
+}
+
+.footerDivider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08); /* Thin divider line */
+  margin-bottom: 2.2rem;
+}
+
+.footerBottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footerCopyright {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #52525b; /* Muted copyright text */
+  margin: 0;
+  text-align: center;
+}
+
+/* --- Premium Minimalist About Us Section (Editorial Dark) --- */
+.aboutSection {
+  width: 100%;
+  background-color: transparent; /* Transparent so the fixed monochrome WebGL canvas shines through! */
+  padding: 10rem 0; /* Generous editorial padding */
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+}
+
+.aboutContainer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6rem; /* Vertical grid layout alignment */
+}
+
+.aboutHeaderContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.aboutTitle {
+  font-family: var(--font-headline);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #ffffff; /* White text */
+  margin: 0;
+}
+
+.aboutTitleLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08); /* Subtle white hairline divider */
+  margin-top: 1.5rem;
+  margin-bottom: 2.2rem;
+}
+
+.aboutEndLine {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08); /* Subtle white hairline divider */
+}
+
+.aboutStory {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  font-weight: 400;
+  color: #a0a0ab; /* Light grey story text */
+  line-height: 1.65;
+  margin: 0;
+  max-width: 720px; /* Comfortable editorial reading width */
+}
+
+/* Team Grid layout (3+2 centered on desktop) */
+.teamGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .teamGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4rem 3rem;
+  }
+}
+
+.teamCard {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle white border */
+  border-radius: 20px;
+  padding: 2.2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.teamCard:hover {
+  transform: translateY(-4px); /* Premium subtle float */
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 28px rgba(255, 255, 255, 0.02); /* Elegant soft light shadow */
+}
+
+.memberName {
+  font-family: var(--font-mrxz); /* Lexend Deca */
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff; /* Bold white text */
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.memberTitle {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a0a0ab; /* Medium grey title */
+}
+
+.memberDesc {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: #858596; /* Lighter grey description */
+  line-height: 1.5;
+  margin: 0.3rem 0 0 0;
+}
+
+@media (min-width: 769px) {
+  /* Rows of 3 and 2 centering layout rules: */
+  .teamCard {
+    grid-column: span 2; /* Spans 2 grid columns (6 columns total / 3 items = 3 items per row) */
+  }
+  
+  /* Centering the 4th and 5th items in a row of 2: */
+  .teamCard:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+  
+  .teamCard:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+}
+
