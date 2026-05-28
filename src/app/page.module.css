@@ -460,11 +460,53 @@
   .navLinks {
     display: none;
   }
-  
+
+  /* ── Hero ── */
   .hero {
-    min-height: calc(100vh - 56px); /* Align with mobile navbar height */
+    min-height: calc(100vh - 56px);
+    padding: 2.5rem 1.5rem 3rem;
+    justify-content: center;
   }
-  
+
+  .heroHeadline {
+    font-size: clamp(2rem, 10vw, 2.8rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Allow headline lines to wrap naturally on narrow screens */
+  .headlineLine {
+    white-space: normal;
+  }
+
+  .heroSubheadline {
+    font-size: clamp(0.9rem, 3.8vw, 1rem);
+    max-width: 100%;
+    margin-bottom: 2rem;
+    padding: 0 0.25rem;
+  }
+
+  .heroCta {
+    padding: 0.85rem 2rem;
+    font-size: 0.9rem;
+  }
+
+  /* ── Trusted By / Client Logo Bar ── */
+  .trustedBy {
+    margin-top: 0.5rem;
+    padding-top: 1.4rem;
+  }
+
+  .clientGrid {
+    gap: 1.6rem;
+    row-gap: 1.2rem;
+  }
+
+  .clientLogoWrapper {
+    width: 44px;
+    height: 44px;
+  }
+
   @keyframes logoFlyToNavbar {
     0% {
       left: 50%;
@@ -473,11 +515,28 @@
       filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5));
     }
     100% {
-      left: 1.5rem; /* Adapt to mobile padding */
-      top: 28px;   /* Middle of mobile navbar (56px / 2) */
+      left: 1.5rem;
+      top: 28px;
       transform: translate(0, -50%) scale(1.0);
       filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
     }
+  }
+}
+
+/* Extra-small phones (≤ 390px) */
+@media (max-width: 390px) {
+  .heroHeadline {
+    font-size: clamp(1.75rem, 11vw, 2.2rem);
+  }
+
+  .clientGrid {
+    gap: 1.2rem;
+    row-gap: 1rem;
+  }
+
+  .clientLogoWrapper {
+    width: 40px;
+    height: 40px;
   }
 }
 
